@@ -1,1 +1,1 @@
-# Adapt MemoryVLA to the RoboMME benchmark
+# Adapt MemoryVLA to RoboMME
