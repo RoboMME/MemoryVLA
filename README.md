@@ -1,3 +1,104 @@
+# Adapt MemoryVLA to RoboMME
+
+## Installation
+1. Install MemoryVLA following original [steps](https://github.com/shihao1895/MemoryVLA?tab=readme-ov-file#install)
+```
+# install torch
+micromamba -n memvla python=3.10
+micromamba activate memvla
+
+pip install torch==2.2.0 torchvision==0.17.0 torchaudio==2.2.0 --index-url https://download.pytorch.org/whl/cu121
+micromamba install -c nvidia cuda-nvcc=12.1 cuda-toolkit=12.1 -y
+
+# install flash-attn
+wget https://github.com/Dao-AILab/flash-attention/releases/download/v2.5.5/flash_attn-2.5.5+cu122torch2.2cxx11abiFALSE-cp310-cp310-linux_x86_64.whl
+pip install flash_attn-2.5.5+cu122torch2.2cxx11abiFALSE-cp310-cp310-linux_x86_64.whl
+
+# install MemoryVLA
+cd MemoryVLA
+pip install -e .
+```
+
+2. Install RoboMME as in [MME-VLA-Suite](https://github.com/RoboMME/robomme_policy_learning/tree/main/examples/robomme). You can just reuse the same environment.
+
+## Data
+Option1: Generate RLDS data format following [rlds_dataset_builder](https://github.com/kpertsch/rlds_dataset_builder), we provide our script in `MemoryVLA/rlds_dataset_builder/robomme` for study.
+
+Option2: Download our processed rlds data from [here](https://huggingface.co/Yinpei/robomme_data_tfds) directly.
+
+## Train MemoryVLA on RoboMME
+```
+bash script/train/robomme/train.sh
+```
+We provide our trained MemoryVLA ckpt [here](https://huggingface.co/Yinpei/memoryvla_ckpt)
+
+## Test MemoryVLA on RoboMME
+```
+# Terminal 0
+micromamba activate memvla 
+bash script/eval/robomme/server.sh
+
+# Terminal 1
+# After the server is already running, then run
+micromamba activate robomme 
+bash script/eval/robomme/client.sh
+```
+
+
+## Results
+
+Currently, we keep all hyperparameters the same as in their [LIBERO training](script/train/libero/train_libero_spatial.sh) and [testing](script/eval/libero/eval_libero.sh) setups, while only change the batch size to 64 and total training steps to 160k, which may not be optimal settings.
+<table>
+<tr>
+  <th rowspan="2">Suite</th>
+  <th rowspan="2">Task</th>
+  <th colspan="4">Success Rate</th>
+</tr>
+<tr>
+  <th>Seed 7</th><th>Seed 42</th><th>Seed 0</th><th><b>Avg</b></th>
+</tr>
+<tr>
+  <td rowspan="4">Counting</td>
+  <td>BinFill</td><td>0.12</td><td>0.10</td><td>0.08</td><td>0.10</td>
+</tr>
+<tr><td>PickXtimes</td><td>0.06</td><td>0.24</td><td>0.22</td><td>0.17</td></tr>
+<tr><td>SwingXtimes</td><td>0.00</td><td>0.02</td><td>0.02</td><td>0.01</td></tr>
+<tr><td>StopCube</td><td>0.00</td><td>0.00</td><td>0.00</td><td>0.00</td></tr>
+
+<tr>
+  <td rowspan="4">Permanence</td>
+  <td>VideoUnmask</td><td>0.10</td><td>0.18</td><td>0.20</td><td>0.16</td>
+</tr>
+<tr><td>VideoUnmaskSwap</td><td>0.04</td><td>0.04</td><td>0.06</td><td>0.05</td></tr>
+<tr><td>ButtonUnmask</td><td>0.04</td><td>0.06</td><td>0.14</td><td>0.08</td></tr>
+<tr><td>ButtonUnmaskSwap</td><td>0.04</td><td>0.04</td><td>0.06</td><td>0.05</td></tr>
+
+<tr>
+  <td rowspan="4">Reference</td>
+  <td>PickHighlight</td><td>0.04</td><td>0.10</td><td>0.08</td><td>0.07</td>
+</tr>
+<tr><td>VideoRepick</td><td>0.00</td><td>0.00</td><td>0.00</td><td>0.00</td></tr>
+<tr><td>VideoPlaceButton</td><td>0.12</td><td>0.16</td><td>0.12</td><td>0.13</td></tr>
+<tr><td>VideoPlaceOrder</td><td>0.08</td><td>0.00</td><td>0.04</td><td>0.04</td></tr>
+
+<tr>
+  <td rowspan="4">Imitation</td>
+  <td>MoveCube</td><td>0.12</td><td>0.18</td><td>0.12</td><td>0.14</td>
+</tr>
+<tr><td>InsertPeg</td><td>0.00</td><td>0.00</td><td>0.00</td><td>0.00</td></tr>
+<tr><td>PatternLock</td><td>0.12</td><td>0.10</td><td>0.14</td><td>0.12</td></tr>
+<tr><td>RouteStick</td><td>0.02</td><td>0.00</td><td>0.02</td><td>0.01</td></tr>
+
+<tr>
+  <td colspan="2"><b>Overall</b></td><td>0.0563</td><td>0.0763</td><td>0.0813</td><td><b>0.0713</b></td>
+</tr>
+</table>
+
+
+> Note: This is only a **basic adaptation** of MemoryVLA to RoboMME. If you obtain better results with MemoryVLA, do not hesitate to submit your models following [this guideline](https://github.com/RoboMME/robomme_benchmark?tab=readme-ov-file#-submit-your-models).
+
+---
+
 # MemoryVLA: Perceptual-Cognitive Memory in Vision-Language-Action Models for Robotic Manipulation
 [Hao Shi](https://shihao1895.github.io/), [Bin Xie](https://xb534.github.io/), [Yingfei Liu](https://scholar.google.com/citations?user=pF9KA1sAAAAJ), [Lin Sun](https://github.com/linsun449), [Fengrong Liu](https://shihao1895.github.io/MemoryVLA/) [Tiancai Wang](https://scholar.google.com/citations?user=YI0sRroAAAAJ), [Erjin Zhou](https://scholar.google.com/citations?user=k2ziPUsAAAAJ), [Haoqiang Fan](https://scholar.google.com/citations?user=bzzBut4AAAAJ), [Xiangyu Zhang](https://scholar.google.com/citations?user=yuB-cfoAAAAJ), [Gao Huang](https://scholar.google.com/citations?user=-P9LwcgAAAAJ)
 

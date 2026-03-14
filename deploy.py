@@ -8,13 +8,24 @@ from argparse import Namespace
 import math
 from flask import Flask, request, jsonify
 import tempfile
-
+import random
 import torch
 
 from vla import load_vla
 from evaluation.simpler_env.adaptive_ensemble import AdaptiveEnsembler
 
 app = Flask(__name__)
+
+
+def set_seed_everywhere(seed: int):
+    """Sets the random seed for Python, NumPy, and PyTorch functions."""
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    os.environ["PYTHONHASHSEED"] = str(seed)
 
 
 class MemVLAService:
@@ -192,7 +203,7 @@ parser.add_argument("--action_ensemble_horizon", type=int, default=2)
 parser.add_argument("--adaptive_ensemble_alpha", type=float, default=0.1)
 parser.add_argument("--action_chunking", action="store_true")
 parser.add_argument("--action_chunking_window", type=int, default=None)
-
+parser.add_argument("--seed", type=int, default=7)
 args = parser.parse_args()
 
 with open(os.path.join(os.path.dirname(os.path.dirname(args.saved_model_path)), "config.yaml"), "r") as f:
@@ -211,6 +222,8 @@ cli_args = vars(args)
 merged_args = deep_update(yaml_args.copy(), cli_args)
 
 args = Namespace(**merged_args)
+
+set_seed_everywhere(args.seed)
 
 inferencer = MemVLAService(
     saved_model_path=args.saved_model_path,
