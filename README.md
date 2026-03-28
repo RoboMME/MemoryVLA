@@ -24,7 +24,7 @@ pip install -e .
 ## Data
 Option1: Generate RLDS data format following [rlds_dataset_builder](https://github.com/kpertsch/rlds_dataset_builder), we provide our script in `MemoryVLA/rlds_dataset_builder/robomme` for study.
 
-Option2: Download our processed rlds data from [here](https://huggingface.co/Yinpei/robomme_data_tfds) directly.
+Option2: Download our processed rlds data from [here](https://huggingface.co/datasets/Yinpei/robomme_data_tfds) directly.
 
 ## Train MemoryVLA on RoboMME
 ```
