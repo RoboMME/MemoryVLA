@@ -52,7 +52,7 @@ def _generate_examples(paths) -> Iterator[Tuple[str, Any]]:
             image = ts["obs"]["front_rgb"][()]
             wrist_image = ts["obs"]["wrist_rgb"][()]
             action = ts["action"]["eef_action"][()]
-            
+            is_video_demo = ts["info"]["is_video_demo"][()] 
             delta_action = calculate_delta_action(action, EEF_state)
     
             assert delta_action.shape == (7,)
@@ -75,6 +75,7 @@ def _generate_examples(paths) -> Iterator[Tuple[str, Any]]:
                 'is_last': idx == timestep_indexs[-1],
                 'is_terminal': idx == timestep_indexs[-1],
                 'language_instruction': task_goal,
+                'is_video_demo': is_video_demo.astype(bool),
             })
 
         # create output data sample
@@ -167,6 +168,10 @@ class ROBOMME(MultiThreadedDatasetBuilder):
                     'language_instruction': tfds.features.Text(
                         doc='Language Instruction.'
                     ),
+                    'is_video_demo': tfds.features.Scalar(
+                        dtype=np.bool_,
+                        doc='True if the demo is a video demo, False if it is a teleop demo.'
+                    ), 
                 }),
                 'episode_metadata': tfds.features.FeaturesDict({
                     'file_path': tfds.features.Text(
@@ -178,5 +183,5 @@ class ROBOMME(MultiThreadedDatasetBuilder):
     def _split_paths(self):
         """Define filepaths for data splits."""
         return {
-            "train": glob.glob('/data/daiyp/robomme_data_h5/*.h5'),
+            "train": glob.glob('/data/daiyp/robomme_data_h5_toy/*.h5'),
         }
