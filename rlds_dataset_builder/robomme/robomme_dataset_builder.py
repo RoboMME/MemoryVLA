@@ -183,5 +183,5 @@ class ROBOMME(MultiThreadedDatasetBuilder):
     def _split_paths(self):
         """Define filepaths for data splits."""
         return {
-            "train": glob.glob('/data/daiyp/robomme_data_h5_toy/*.h5'),
+            "train": glob.glob('/data/daiyp/robomme_data_h5/*.h5'),
         }

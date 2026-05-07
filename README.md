@@ -25,6 +25,7 @@ pip install -e .
 Option1: Generate RLDS data format following [rlds_dataset_builder](https://github.com/kpertsch/rlds_dataset_builder), we provide our script in `MemoryVLA/rlds_dataset_builder/robomme` for study.
 
 Option2: Download our processed rlds data from [here](https://huggingface.co/datasets/Yinpei/robomme_data_tfds) directly.
+> The provided dataset contains full trajectories (demo + execution frames), but does not contain the `is_video_demo` label to differentiate the frame type. If you need this label, you can regenerate the data via Option 1
 
 ## Train MemoryVLA on RoboMME
 ```
